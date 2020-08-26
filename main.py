@@ -1,80 +1,86 @@
+import curses
+from curses import textpad
 import os
-from termcolor import colored
-import readchar
 import pygame
-import multiprocessing
-os.system('clear')
+
 os.system('ls ~/Music >> names.txt')
 names = open("names.txt", 'r+')
-songs = names.readlines(10000000)
+menu = names.readlines(1000000)
 names.truncate(0)
-exit = False
-current = 0
-selection = 0
-playing= 0
-pause=False
-time = False
 
-pygame.init()
+
 
 def play(current):
-	global playing
 	playing = current
 	pygame.mixer.quit()
 	pygame.mixer.init(frequency=48000)
-	pygame.mixer.music.load(songs[current].replace('\n',''))
+	pygame.mixer.music.load(menu[current].replace('\n',''))
 	pygame.mixer.music.play()
 
+def main(stdscr):
 
-def stop():
-	global pause
-	if pause == False:
-		pygame.mixer.music.pause()
-		pause = True
-	else:
-		pygame.mixer.music.unpause()
-		pause=False
+	curses.curs_set(0)
+	pygame.mixer.init(frequency=48000)
+	curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
+	curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
+	current = 2
+	down_limit = 23
+	up_limit = 0
+	pause = False
 
-def display():
-	global time
-	os.system('clear')
-	for i in range(len(songs)):
-		if i == current:
-			print(colored(songs[i].replace('\n',''), 'blue'))
-		elif i == playing:
-			print(colored(songs[i].replace('\n',''), 'green'))
-		else:
-			print(songs[i].replace('\n',''))
-	if time == True:
-		print(pygame.mixer.music.get_pos()) 
+	while True:
+		playing = 0
+		stdscr.refresh()
+		key = stdscr.getch()
+		h, w = stdscr.getmaxyx()
+		y = h//2 - len(menu)//2
+		x = w - 4*w//5
+		
+		box = [[3,26], [h-5, w-10]]
+		
 
+		if key == curses.KEY_UP and current > 0:
+			current-=1
+			down_limit-=1
+			up_limit-=1
+			stdscr.clear()
 
-def main():
-	global time
-	global current
-	while not exit:
-		if time == True:
-			display()
-		key = readchar.readkey()
-		if(key == 'k'):
-			current -=1
-			if current<1:
-				current = 0
-			display()
-		if(key == 'm'):
-			current +=1
-			if current>len(songs)-1:
-				current = len(songs)-1
-			display()
-		if(key == 'n'):
-			time=True
+		if key == curses.KEY_DOWN and current < len(menu)-1:
+			current+=1
+			down_limit+=1
+			up_limit+=1
+			stdscr.clear()
+
+		if key == curses.KEY_ENTER or key == 10 or key == 13:
 			play(current)
-			display()
-		if(key == 'j'):
-			stop()
-		if(key == 'q'):
-			os.system('clear')
-			quit()
+
+		if key == ord(' '):
+			if pause == True:
+				pygame.mixer.music.unpause()
+				pause = False
+			elif pause == False:
+				pygame.mixer.music.pause()
+				pause = True
+
+		for i in range(len(menu)):
+			if i < down_limit and i > up_limit:
+				if current == i:
+					stdscr.attron(curses.color_pair(1))
+					stdscr.addstr(y+i-down_limit+45, x, menu[i])
+					stdscr.attroff(curses.color_pair(1))
+				elif playing == i:
+					stdscr.attron(curses.color_pair(2))
+					stdscr.addstr(y+i-down_limit+45, x, menu[i])
+					stdscr.attroff(curses.color_pair(2))
+				else:	
+					stdscr.addstr(y+i-down_limit+45, x, menu[i])
+			stdscr.refresh()
+		textpad.rectangle(stdscr, box[0][0], box[0][1], box[1][0], box[1][1],)
+		stdscr.addstr(26, x, str(pygame.mixer.music.get_pos()))		
 
 
-main()
+		
+
+
+
+curses.wrapper(main)
