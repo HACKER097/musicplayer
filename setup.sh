@@ -7,6 +7,4 @@ cp main.py $FOLDER/main.py
 echo "alias muicplayer='cd ~/Music; python3 main.py; cd ~/'" >> $HOME/.bashrc      
 clear
 echo restart bash and type "musicplayer" to start
-echo K,M : UP,DOWN
-echo N : PLAY
-echo Q : QUIT
+echo up, down to gavigate, enter to play, space to pause/unpause
