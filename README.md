@@ -3,10 +3,7 @@ This is a TUI music player, its pretty terrible but its mine, I am working to ma
 
 SETUP:
 `bash setup.sh`
-USAGE:
-K,M : UP,DOWN
-N : PLAY
-Q : QUIT
 
-these are pretty bad controls you can change them if you some how manage to read my code
+USAGE:
+up, down to gavigate, enter to play, space to pause/unpause
 
