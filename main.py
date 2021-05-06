@@ -5,6 +5,7 @@ import pathlib
 from pathlib import Path
 import vlc
 import pafy
+import os
 
 def text_middle(stdscr, text, xoffset, yoffset, align = True):
 	HIEGHT, WIDTH = 30, 110
@@ -56,6 +57,7 @@ class scroll_list:
 		self.current = current
 
 	def scroll(self):
+		self.stdscr.attron(curses.color_pair(6))
 		if self.current >= self.length:
 			self.newitems=self.items[self.current:][:self.length+(self.length-self.current)]
 		else:
@@ -68,6 +70,7 @@ class scroll_list:
 					self.current_banner = banner(self.stdscr, self.newitems[i], 30, self.x, self.y+i, 0)
 			else:
 				self.stdscr.addstr(self.y+i, self.x, str(self.newitems[i])[:30])
+		self.stdscr.attroff(curses.color_pair(6))
 
 
 
@@ -154,7 +157,7 @@ class window:
 			self.youtube_mode = True 
 
 	def display(self):
-		self.stdscr.clear()
+		self.stdscr.erase()
 		
 		self.stdscr.attron(curses.color_pair(4))
 		curses.textpad.rectangle(self.stdscr, 0, 30, 28, 110)
@@ -183,8 +186,10 @@ class window:
 				self.minutes = "0"+str(self.minutes)
 
 			self.time = str(self.minutes)+":"+str(self.seconds)
-
+			self.stdscr.attron(curses.color_pair(2))
 			self.stdscr.addstr(29,35 ,str(self.time))
+			self.stdscr.attroff(curses.color_pair(2))
+			self.stdscr.attron(curses.color_pair(1))
 			self.stdscr.addstr(29,40 ,"[")
 			self.stdscr.addstr(29,110 ,"]")
 			self.bar_length = int(self.p.get_position()*69)
@@ -192,12 +197,13 @@ class window:
 				self.stdscr.addstr(29, 41+i, "=")
 			if not self.p.get_position() == 1:
 				pass
-				#self.stdscr.addstr(29, 41+self.bar_length, "O")
+				self.stdscr.addstr(29, 41+self.bar_length, "O")
 
 			if self.p.is_playing():
 				self.stdscr.addstr(29, 31 ,"[>]")
 			else:
 				self.stdscr.addstr(29, 31 ,"[//]")
+			self.stdscr.attroff(curses.color_pair(1))
 
 			self.track_banner.blink()
 			self.album_banner.blink()
@@ -261,10 +267,47 @@ class window:
 
 
 		try:
-			curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
-			curses.init_pair(2, curses.COLOR_WHITE, curses.COLOR_BLACK)
-			curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_YELLOW)
-			curses.init_pair(4, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+			curses.init_pair(1, 226, 0) #passive selected text inner, outer
+			curses.init_pair(2, 51, 0)  #timer color inner, outer
+			curses.init_pair(3, 226, 6) #active selected inner, outer
+			curses.init_pair(4, 51, 0)  #border coloer inner,outer
+			curses.init_pair(6, 228, 0)  #regular text inner, outer
+			'''
+
+			curses.init_pair(1, 226, 0) #passive selected text inner, outer
+			curses.init_pair(2, 51, 0)  #timer color inner, outer
+			curses.init_pair(3, 226, 6) #active selected inner, outer
+			curses.init_pair(4, 51, 0)  #border coloer inner,outer
+			curses.init_pair(6, 228, 0)  #regular text inner, outer
+
+			Colors:
+			0 - black
+			1 - red
+			2 - green
+			3 - brown
+			4 - blue
+			5 - purpe
+			6 - cyan
+			7 - gray
+			8 - dark gray
+			9 - pink
+			10- bright green
+			11- bright yellow
+			12- bule 2
+			13- purple 2
+			14- cyan brighter
+			15- bright white
+			16- black 2
+
+			https://en.wikipedia.org/wiki/ANSI_escape_code
+			
+			these are 8 bit colors, there are a total of 256 colors, use the link and scroll to 8 bit color section to see all colors
+
+			also use curses.COLOR_<color name>
+
+
+			'''
+
 			self.test = scroll_list(self.stdscr, ["hello","traing","thing"], 3, 10, 10, 0)
 			while self.run:
 				self.HEIGHT, self.WIDTH = self.stdscr.getmaxyx()
